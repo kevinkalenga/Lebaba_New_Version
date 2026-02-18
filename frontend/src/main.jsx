@@ -4,6 +4,8 @@ import './index.css'
 import App from './App.jsx'
 import router from './routers/router.jsx'
 import { RouterProvider } from 'react-router-dom'
+import 'remixicon/fonts/remixicon.css'
+import './App.css'
 
 
 createRoot(document.getElementById('root')).render(
