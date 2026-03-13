@@ -1,10 +1,19 @@
 
 import Ordersummary from './OrderSummary';
-
+import { updateQuantity, removeFromCart } from '../../redux/features/cart/cartSlice'
+import { useDispatch } from 'react-redux'
 
 const CartModal = ({ products, isOpen, onClose }) => {
-  
+    const dispatch = useDispatch();
+    const handleQuantity = (type, id) => {
+        const payload = { type, id }
+        dispatch(updateQuantity(payload))
+    }
 
+    const handleRemove = (e, id) => {
+        e.preventDefault();
+        dispatch(removeFromCart({ id }))
+    }
 
 
     return (
@@ -45,14 +54,14 @@ const CartModal = ({ products, isOpen, onClose }) => {
                                             </div>
                                             <div className="flex flex-row md:justify-start justify-end items-center mt-2">
                                                 <button
-                                                   
+                                                    onClick={() => handleQuantity('decrement', item._id)}
                                                     className="size-6 flex justify-center bg-gray-200
                                                 items-center text-gray-700 ml-8
                                                  hover:bg-primary hover:text-white
                                                  rounded-full px-1.5">-</button>
                                                 <span className="text-center px-2 mx-1">{item.quantity}</span>
                                                 <button
-                                                    
+                                                    onClick={() => handleQuantity('increment', item._id)}
                                                     className="size-6 flex justify-center bg-gray-200
                                                 items-center text-gray-700
                                                  hover:bg-primary hover:text-white
@@ -60,7 +69,7 @@ const CartModal = ({ products, isOpen, onClose }) => {
 
                                                 <div className='ml-5'>
                                                     <button
-                                                       
+                                                       onClick={(e) => handleRemove(e, item._id)}
                                                         className='text-red-500 hover:text-red-800 mr-4'
                                                     >Remove</button>
                                                 </div>
