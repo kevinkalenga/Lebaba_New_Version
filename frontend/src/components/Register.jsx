@@ -8,6 +8,7 @@ const Register = () => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    
    
 
 
@@ -23,6 +24,7 @@ const Register = () => {
         }
         // console.log(data)
 
+         
         
 
     }
@@ -46,6 +48,7 @@ const Register = () => {
                         placeholder='Password' required
                         className='w-full bg-gray-100 focus:outline-none px-5 py-3'
                     />
+                   
                     {
                         message && <p className='text-red-500'>{message}</p>
                     }
