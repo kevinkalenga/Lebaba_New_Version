@@ -1,10 +1,10 @@
 const express = require('express')
 const mongoose = require('mongoose');
 const cors = require('cors');
+const app = express()
 require('dotenv').config();
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser')
-const app = express()
 const port = process.env.PORT || 5000
 
 // Middleware setup
@@ -18,6 +18,11 @@ app.use(cors({
     origin: "http://localhost:5173",
     credentials: true
 }))
+
+// All routes
+const authRoutes = require('./src/users/user.route');
+
+app.use('/api/auth', authRoutes);
 
 
 
