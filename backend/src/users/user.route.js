@@ -1,7 +1,6 @@
 const express = require('express');
 const User = require('./user.model');
 const generateToken = require('../middleware/generateToken');
-const verifyToken = require('../middleware/verifyToken');
 const router = express.Router();
 
 // Register endpoint
@@ -63,11 +62,45 @@ router.post('/login', async(req, res) => {
 
 })
 
+// logout endpoint
+
+router.post('/logout', async (req, res) => {
+    res.clearCookie('token');
+    res.status(200).send({ message: 'Logged out successfully' })
+})
+
+
+// delete a user
+router.delete("/users/:id", async (req, res) => {
+    try {
+        // base on id and we get it from the params
+        const { id } = req.params;
+        // get the user
+        const user = await User.findByIdAndDelete(id);
+        if (!user) {
+            return res.status(404).send({ message: "User not found" });
+        }
+        res.status(200).send({ message: "User deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting user", error);
+        res.status(500).send({ message: "Error deleting user" });
+    }
+});
+
 
 // get all users
-router.get("/users", verifyToken, async (req, res) => {
-    res.send({message: "Protected users"})
+router.get("/users", async (req, res) => {
+    try {
+        // we will return id, email, role
+        const users = await User.find({}, "id email role").sort({ createdAt: -1 });
+        res.status(200).send(users);
+    } catch (error) {
+        console.error("Error fetching users", error);
+        res.status(500).send({ message: "Error fetching user" });
+    }
 });
+
+
 
 
 module.exports = router;
