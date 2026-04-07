@@ -82,6 +82,29 @@ router.get("/", async (req, res) => {
 });
 
 
+//   get single Product
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Vérifier que l'id est un ObjectId valide
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).send({ message: "Invalid product ID" });
+    }
+
+    const product = await Products.findById(id).populate("author", "email username");
+    if (!product) {
+      return res.status(404).send({ message: "Product not found" });
+    }
+
+    const reviews = await Reviews.find({ productId: id }).populate("userId", "username email");
+    res.status(200).send({ product, reviews });
+  } catch (error) {
+    console.error("Error fetching the product", error);
+    res.status(500).send({ message: "Failed to fetch the product" });
+  }
+});
+
 
 module.exports = router;
 
