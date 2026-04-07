@@ -67,7 +67,8 @@ const authApi = createApi({
                 method: 'PATCH',
                 body: profileData
             })
-        })
+        }),
+       
       })
 })
 
@@ -79,7 +80,8 @@ export const {
     useGetUserQuery,
     useDeleteUserMutation,
     useUpdateUserRoleMutation,
-    useEditProfileMutation
+    useEditProfileMutation,
+   
 } = authApi;
 
 export default authApi
