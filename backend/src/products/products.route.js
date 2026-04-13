@@ -6,6 +6,7 @@ const Reviews = require("../reviews/reviews.model");
 const mongoose = require("mongoose");
 const router = express.Router();
 const verifyToken = require("../middleware/verifyToken");
+const verifyAdmin = require("../middleware/verifyAdmin");
 
 // post a product
 router.post("/create-product", async (req, res) => {
@@ -108,7 +109,7 @@ router.get("/:id", async (req, res) => {
 
 // update a product
 
-router.patch("/update-product/:id" , verifyToken,  async (req, res) => {
+router.patch("/update-product/:id", verifyToken, verifyAdmin,  async (req, res) => {
   try {
     const { id } = req.params;
 
