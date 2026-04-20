@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import ProductCards from './ProductCards'
 
-import products from '../../data/products.json'
+import { useFetchAllProductsQuery } from "../../redux/features/products/productsApi";
+
 
 const TrendingProducts = () => {
   
@@ -9,6 +10,14 @@ const TrendingProducts = () => {
   const loadMoreProducts = () => {
     setVisibleProducts(prevCount => prevCount +  4)
   }
+
+  const { data: { products = [], totalProducts = 0  } = {}, isLoading } =
+   useFetchAllProductsQuery({
+    page: 1,
+    limit: visibleProducts
+  });
+
+  if (isLoading) return <p>Loading...</p>;
   
   return (
     <section className='section__container product_container'>
@@ -22,11 +31,17 @@ const TrendingProducts = () => {
        </div>
        {/* load more product btn */}
        <div className='product__btn'>
-           {
+           {/* {
             visibleProducts < products.length && (
               <button className='btn' onClick={loadMoreProducts}>Load More</button>
             )
-           }
+           } */}
+
+            {visibleProducts < totalProducts && (
+               <button className='btn' onClick={loadMoreProducts}>
+                 Load More
+               </button>
+            )}
        </div>
     </section>
   )
