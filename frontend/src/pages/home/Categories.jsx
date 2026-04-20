@@ -10,7 +10,7 @@ const Categories = () => {
   
      const categories = [
         {
-            name: 'Accessoories',
+            name: 'Accessories',
             path: 'accessories',
             image: category1
         },
