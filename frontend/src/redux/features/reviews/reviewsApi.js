@@ -15,18 +15,25 @@ export const reviewApi = createApi({
                 method: "POST",
                 body: reviewData
             }),
-            invalidatesTags: (result, error, { postId }) => [{ type: "Reviews", id: postId }]
+            invalidatesTags: (result, error, { productId }) => [
+               { type: "Reviews", id: productId },
+               { type: "Products", id: productId }
+            ]
+            // invalidatesTags: (result, error, { postId }) => [{ type: "Reviews", id: postId }]
         }),
         getReviewsCount: builder.query({
             query: () => ({
-                url: "/total-reviews"
+                url: "/total-review"
             })
         }),
         getReviewsByUserId: builder.query({
             query: (userId) => ({
                 url: `/${userId}`
             }),
-            providesTags: (result) => result ? [{ type: "Reviews", id: result[0]?.email }] : []
+             providesTags: (result, error, userId) => [
+               { type: "Reviews", id: userId }
+            ]
+            // providesTags: (result) => result ? [{ type: "Reviews", id: result[0]?.email }] : []
         })
     })
 })
