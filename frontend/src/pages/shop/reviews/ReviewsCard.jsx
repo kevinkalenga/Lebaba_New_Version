@@ -3,6 +3,7 @@ import commentorIcon from "../../../assets/avatar.png"
 import { formateDate } from "../../../utils/formateDate"
 import RatingStars from '../../../components/RatingStars'
 import { useState } from "react";
+import PostAReview from "./PostAReview"
 
 
 
@@ -14,6 +15,10 @@ const ReviewsCard = ({ productReviews }) => {
 
     const handleOpenReviewModal = () => {
         setIsModalOpen(true)
+    }
+
+    const handleCloseReviewModal = () => {
+        setIsModalOpen(false)
     }
 
     return (
@@ -54,7 +59,7 @@ const ReviewsCard = ({ productReviews }) => {
                 </button>
             </div>
             {/* review modal */}
-           
+           <PostAReview isModalOpen={isModalOpen} handleClose={handleCloseReviewModal} />
         </div>
 
 
