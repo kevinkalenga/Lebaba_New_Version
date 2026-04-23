@@ -11,7 +11,8 @@ const CategoryPage = () => {
 
     // to get the categoryName from url
     const { categoryName } = useParams();
-
+    
+    // la reponse de l'Api qui nous retourne un objet
     const { data: { products = [] } = {}, isLoading } =
     useFetchAllProductsQuery({
       category: categoryName,
