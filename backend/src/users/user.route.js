@@ -80,6 +80,10 @@ router.delete("/users/:id", async (req, res) => {
         if (!user) {
             return res.status(404).send({ message: "User not found" });
         }
+        
+       
+        
+        
         res.status(200).send({ message: "User deleted successfully" });
     } catch (error) {
         console.error("Error deleting user", error);
@@ -154,6 +158,8 @@ router.patch("/edit-profile", async (req, res) => {
         res.status(500).send({ message: "Error updating user profile" });
     }
 });
+
+
 
 
 

@@ -6,7 +6,7 @@ import { Link, useParams } from 'react-router-dom'
 import RatingStars from '../../../components/RatingStars';
 import { useFetchProductByIdQuery } from '../../../redux/features/products/productsApi';
 import { addToCart } from '../../../redux/features/cart/cartSlice';
-import {useDispatch} from "react-redux"
+import {useDispatch, useSelector} from "react-redux"
 import ReviewsCard from '../reviews/ReviewsCard';
 
 
@@ -16,11 +16,12 @@ const SingleProduct = () => {
     const {id} = useParams();
     const dispatch =  useDispatch();
     const {data, error, isLoading} = useFetchProductByIdQuery(id);
-
+     const {isAuthenticated} = useSelector((state) => state.auth)
+     console.log(isAuthenticated)
      const singleProduct = data?.product || {};
-     console.log(singleProduct._id)
+    //  console.log(singleProduct._id)
      const productReviews = data?.reviews || [];
-     console.log(data)
+    //  console.log(data)
 
     const handleAddToCart = (product) => {
         dispatch(addToCart(product))
@@ -86,7 +87,27 @@ const SingleProduct = () => {
             </section>
              {/* display Reviews */} 
             <section className='section__container mt-8'>
-               <ReviewsCard productReviews = {productReviews}/>
+              
+               {
+                isAuthenticated ? ( <ReviewsCard productReviews = {productReviews}/>):(
+                   <div className="mt-12 border rounded-lg p-6 bg-gray-50 text-center">
+                      <h3 className="text-lg font-semibold text-gray-800">
+                          Want to leave a review?
+                      </h3>
+
+                      <p className="text-gray-500 mt-2">
+                          Please login to post a review
+                      </p>
+
+                      <Link
+                          to="/login"
+                          className="inline-block mt-4 px-6 py-3 bg-primary text-white rounded-md hover:bg-primary/90 transition"
+                      >
+                          Login
+                      </Link>
+                   </div>
+                  )
+               }
             </section>
          
         </>
