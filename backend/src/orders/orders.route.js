@@ -51,5 +51,46 @@ router.post("/create-checkout-session", verifyToken, async (req, res) => {
     }
 });
 
+// Confirm Payment 
+
+router.post("/confirm-payment", verifyToken, async (req, res) => {
+    const { session_id } = req.body;
+    const userId = req.user.id;
+
+    try {
+        const session = await stripe.checkout.sessions.retrieve(session_id, {
+            expand: ["line_items", "payment_intent"],
+        });
+
+        if (session.metadata.userId !== userId.toString()) {
+            return res.status(403).json({ error: "Unauthorized session" });
+        }
+
+        const paymentIntentId = session.payment_intent.id;
+        const isPaid = session.payment_status === "paid";
+
+        let order = await Order.findOne({ orderId: paymentIntentId, userId });
+
+        if (!order) {
+            order = new Order({
+                orderId: paymentIntentId,
+                amount: session.amount_total / 100,
+                email: session.customer_details.email,
+                userId,
+                status: isPaid ? "pending" : "failed",
+            });
+        } else {
+            order.status = isPaid ? "pending" : "failed";
+        }
+
+        await order.save();
+
+        res.json({ order });
+
+    } catch (error) {
+        res.status(500).json({ error: "Failed to confirm payment" });
+    }
+});
+
 
 module.exports = router;
