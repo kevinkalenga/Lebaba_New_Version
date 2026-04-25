@@ -1,29 +1,26 @@
-const jwt = require('jsonwebtoken');
-
-const JWT_SECRET = process.env.JWT_SECRET_KEY;
+const jwt = require("jsonwebtoken");
 
 const verifyToken = (req, res, next) => {
     try {
-        // get the token
-        const token = req.cookies.token;
-        // console.log(token)
-        if (!token) {
-            return res.status(401).send({ message: 'Invalide token' })
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader) {
+            return res.status(401).send({ message: "No token provided" });
         }
-        // verification in the doc of jwt
-        const decoded = jwt.verify(token, JWT_SECRET)
-        //failed
-        if (!decoded) {
-            return res.status(401).send({ message: 'Invalide token or not valid' })
-        }
-        // it's ok
+
+        const token = authHeader.split(" ")[1];
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
         req.userId = decoded.userId;
         req.role = decoded.role;
+        req.email = decoded.email,
+        req.user = decoded;
+
         next();
     } catch (error) {
-        console.error('Error while verifying token', error);
-        res.status(401).send({ message: 'Error while verifying token' })
+        return res.status(401).send({ message: "Invalid token" });
     }
-}
+};
 
 module.exports = verifyToken;

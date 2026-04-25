@@ -20,15 +20,15 @@ router.post("/create-checkout-session", verifyToken, async (req, res) => {
 
     try {
         const lineItems = products.map((product) => ({
-            price_data: {
-                currency: "usd",
-                product_data: {
-                    name: product.name,
-                    images: [product.image],
+                price_data: {
+                    currency: "usd",
+                    product_data: {
+                    name: product.name || "Unknown product",
+                    images: product.image ? [product.image] : [],
+                    },
+                    unit_amount: Math.round((product.price || 0) * 100),
                 },
-                unit_amount: Math.round(product.price * 100),
-            },
-            quantity: product.quantity,
+                quantity: product.quantity || 1,
         }));
 
         const session = await stripe.checkout.sessions.create({
@@ -37,13 +37,13 @@ router.post("/create-checkout-session", verifyToken, async (req, res) => {
             mode: "payment",
             customer_email: req.user.email,
             metadata: {
-                userId: req.user.id,
+                userId: req.user.userId,
             },
             success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${process.env.CLIENT_URL}/cancel`,
         });
 
-        res.json({ id: session.id });
+        res.json({ url: session.url });
 
     } catch (error) {
         console.error(error);

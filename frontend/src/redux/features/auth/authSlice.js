@@ -18,6 +18,7 @@ const loadUserFromLocalStorage = () => {
 
 const initialState = {
     user: loadUserFromLocalStorage(),
+    token: localStorage.getItem("token") || null,
     isAuthenticated: !!loadUserFromLocalStorage(),
 };
 
@@ -35,19 +36,23 @@ const authSlice = createSlice({
     reducers: {
         setUser: (state, action) => {
             state.user = action.payload.user;
+            state.token = action.payload.token;
             state.isAuthenticated = true;
 
             localStorage.setItem(
                 'user',
                 JSON.stringify(state.user)
             );
+            localStorage.setItem('token', action.payload.token);
         },
 
         logout: (state) => {
             state.user = null;
+            state.token = null;
             state.isAuthenticated = false;
 
             localStorage.removeItem('user');
+            localStorage.removeItem('token');
         }
     }
 });
