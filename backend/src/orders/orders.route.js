@@ -55,7 +55,7 @@ router.post("/create-checkout-session", verifyToken, async (req, res) => {
 
 router.post("/confirm-payment", verifyToken, async (req, res) => {
     const { session_id } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     try {
         const session = await stripe.checkout.sessions.retrieve(session_id, {
@@ -88,7 +88,10 @@ router.post("/confirm-payment", verifyToken, async (req, res) => {
         res.json({ order });
 
     } catch (error) {
-        res.status(500).json({ error: "Failed to confirm payment" });
+          console.error(error);
+          res.status(500).json({
+             error: error.message
+          });
     }
 });
 
