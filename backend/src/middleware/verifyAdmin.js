@@ -1,11 +1,11 @@
 const verifyAdmin = (req, res, next) => {
-    if (req.role !== 'admin') {
+    if (!req.user || req.user.role !== 'admin') {
         return res.status(403).send({
-            success: false, message:
-                "You are not authorized to perform this action"
-        })
+            success: false,
+            message: "You are not authorized to perform this action"
+        });
     }
-    next()
-}
+    next();
+};
 
-module.exports = verifyAdmin
+module.exports = verifyAdmin;

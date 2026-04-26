@@ -40,7 +40,8 @@ const OrderSummary = () => {
                "Content-Type": "application/json",
                "Authorization":  `Bearer ${token}`// Ajout de token 
              };
-
+             console.log("USER:", user);
+             console.log("TOKEN:", token);
              const response = await fetch(`${getBaseUrl()}/api/orders/create-checkout-session`, {
                method: "POST",
                headers,

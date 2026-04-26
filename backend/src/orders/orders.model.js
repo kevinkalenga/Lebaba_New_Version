@@ -4,6 +4,14 @@ const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
     orderId: String,
+    
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    
+    
     products: [
         {
             productId: { type: String, required: true },

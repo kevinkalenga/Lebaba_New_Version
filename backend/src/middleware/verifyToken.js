@@ -4,7 +4,7 @@ const verifyToken = (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
 
-        if (!authHeader) {
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
             return res.status(401).send({ message: "No token provided" });
         }
 
@@ -12,9 +12,6 @@ const verifyToken = (req, res, next) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-        req.userId = decoded.userId;
-        req.role = decoded.role;
-        req.email = decoded.email,
         req.user = decoded;
 
         next();

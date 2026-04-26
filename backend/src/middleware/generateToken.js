@@ -18,7 +18,8 @@ const generateToken = async (userId) => {
         });
         return token;
     } catch (error) {
-
+       console.error("JWT generation error:", error);
+       throw error;
     }
 }
 
