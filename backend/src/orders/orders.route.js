@@ -4,6 +4,13 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const router = express.Router();
 const verifyToken = require("../middleware/verifyToken");
 const verifyAdmin = require("../middleware/verifyAdmin");
+const {
+  createPaypalOrder,
+  capturePaypalOrder,
+ verifyPaypalPayment
+  
+} = require("../../utils/paypal.js");
+const Product = require("../products/products.model.js");
 
 
 const YOUR_DOMAIN = 'http://localhost:4242';
@@ -12,47 +19,132 @@ const YOUR_DOMAIN = 'http://localhost:4242';
 
 
 // create checkout session - route sécurisée
-router.post("/create-checkout-session", verifyToken, async (req, res) => {
-    const { products } = req.body;
+// router.post("/create-checkout-session", verifyToken, async (req, res) => {
+//     const { products } = req.body;
 
-    if (!products || !Array.isArray(products) || products.length === 0) {
-        return res.status(400).json({ error: "Invalid products" });
-    }
+//     if (!products || !Array.isArray(products) || products.length === 0) {
+//         return res.status(400).json({ error: "Invalid products" });
+//     }
 
+//     try {
+//         const lineItems = products.map((product) => ({
+//                 price_data: {
+//                     currency: "usd",
+//                     product_data: {
+//                     name: product.name || "Unknown product",
+//                     images: product.image ? [product.image] : [],
+//                     },
+//                     unit_amount: Math.round((product.price || 0) * 100),
+//                 },
+//                 quantity: product.quantity || 1,
+//         }));
+
+//         const session = await stripe.checkout.sessions.create({
+//             payment_method_types: ["card"],
+//             line_items: lineItems,
+//             mode: "payment",
+//             customer_email: req.user.email,
+//             metadata: {
+//                 userId: req.user.userId,
+//             },
+//             success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+//             cancel_url: `${process.env.CLIENT_URL}/cancel`,
+//         });
+
+//         res.json({ url: session.url });
+
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: "Failed to create checkout session" });
+//     }
+// });
+
+ router.post("/create-checkout-session", verifyToken, async (req, res) => {
     try {
-        const lineItems = products.map((product) => ({
+        const { products } = req.body;
+
+        if (!products || !Array.isArray(products) || products.length === 0) {
+            return res.status(400).json({ error: "Invalid products" });
+        }
+
+        // 🔥 Get products from DB (security)
+        const itemsFromDB = await Product.find({
+            _id: { $in: products.map(p => p._id) }
+        });
+
+        if (!itemsFromDB.length) {
+            return res.status(404).json({ error: "Products not found in DB" });
+        }
+
+        // 💰 Calculate total safely
+        const totalPrice = itemsFromDB.reduce((sum, product) => {
+            const cartItem = products.find(
+                p => p._id === product._id.toString()
+            );
+
+            return sum + product.price * (cartItem?.quantity || 1);
+        }, 0);
+
+        // 🧾 Create local order
+        const newOrder = new Order({
+            userId: req.user.userId,
+            email: req.user.email,
+            products: products.map(item => ({
+                productId: item._id,
+                quantity: item.quantity
+            })),
+            amount: totalPrice,
+            status: "pending",
+            paymentMethod: "stripe",
+            isPaid: false
+        });
+
+        const savedOrder = await newOrder.save();
+
+        // 💳 Stripe line items
+        const lineItems = itemsFromDB.map(product => {
+            const cartItem = products.find(
+                p => p._id === product._id.toString()
+            );
+
+            return {
                 price_data: {
                     currency: "usd",
                     product_data: {
-                    name: product.name || "Unknown product",
-                    images: product.image ? [product.image] : [],
+                        name: product.name,
+                        images: product.image ? [product.image] : []
                     },
-                    unit_amount: Math.round((product.price || 0) * 100),
+                    unit_amount: Math.round(product.price * 100)
                 },
-                quantity: product.quantity || 1,
-        }));
+                quantity: cartItem?.quantity || 1
+            };
+        });
 
+        // 🚀 Stripe session
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
             line_items: lineItems,
             mode: "payment",
             customer_email: req.user.email,
+
             metadata: {
                 userId: req.user.userId,
+                orderId: savedOrder._id.toString()
             },
+
             success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.CLIENT_URL}/cancel`,
+            cancel_url: `${process.env.CLIENT_URL}/cancel`
         });
 
-        res.json({ url: session.url });
+        return res.json({ url: session.url });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Failed to create checkout session" });
+        console.error("Stripe error:", error);
+        return res.status(500).json({
+            error: "Failed to create checkout session"
+        });
     }
 });
-
-// Confirm Payment 
 
 router.post("/confirm-payment", verifyToken, async (req, res) => {
     const { session_id } = req.body;
@@ -60,41 +152,60 @@ router.post("/confirm-payment", verifyToken, async (req, res) => {
 
     try {
         const session = await stripe.checkout.sessions.retrieve(session_id, {
-            expand: ["line_items", "payment_intent"],
+            expand: ["payment_intent"]
         });
 
+        // 🔐 security check
         if (session.metadata.userId !== userId.toString()) {
             return res.status(403).json({ error: "Unauthorized session" });
         }
 
-        const paymentIntentId = session.payment_intent.id;
+        // 🧠 FIX: payment_intent can be string OR object
+        const paymentIntentId =
+            typeof session.payment_intent === "string"
+                ? session.payment_intent
+                : session.payment_intent?.id;
+
         const isPaid = session.payment_status === "paid";
 
-        let order = await Order.findOne({ orderId: paymentIntentId, userId });
+        if (!paymentIntentId) {
+            return res.status(400).json({ error: "Missing payment intent" });
+        }
 
+        let order = await Order.findOne({
+            orderId: paymentIntentId,
+            userId
+        });
+
+        // 🆕 If order not found → create it
         if (!order) {
             order = new Order({
                 orderId: paymentIntentId,
                 amount: session.amount_total / 100,
-                email: session.customer_details.email,
+                email: session.customer_details?.email || req.user.email,
                 userId,
+                products: [],
                 status: isPaid ? "pending" : "failed",
+                paymentMethod: "stripe",
+                isPaid
             });
         } else {
             order.status = isPaid ? "pending" : "failed";
+            order.isPaid = isPaid;
         }
 
         await order.save();
 
-        res.json({ order });
+        return res.json({ order });
 
     } catch (error) {
-          console.error(error);
-          res.status(500).json({
-             error: error.message
-          });
+        console.error("Confirm payment error:", error);
+        return res.status(500).json({
+            error: error.message
+        });
     }
 });
+
 
 
 
@@ -227,6 +338,97 @@ router.delete("/delete-order/:id", verifyToken, verifyAdmin, async (req, res) =>
         res.status(500).send({
             message: "Failed to delete order"
         });
+    }
+});
+
+
+// Paypal 
+router.post("/paypal/create-order", verifyToken, async (req, res) => {
+  try {
+    const { products } = req.body;
+
+    if (!products || !Array.isArray(products) || products.length === 0) {
+      return res.status(400).json({ message: "No products" });
+    }
+
+    // FIX: support productId OU _id
+    const productIds = products.map(p => p.productId || p._id);
+
+    const itemsFromDB = await Product.find({
+      _id: { $in: productIds }
+    });
+
+    if (!itemsFromDB.length) {
+      return res.status(404).json({ message: "Products not found" });
+    }
+
+    const totalPrice = itemsFromDB.reduce((sum, product) => {
+      const item = products.find(
+        p => (p.productId || p._id) === product._id.toString()
+      );
+
+      return sum + product.price * (item?.quantity || 1);
+    }, 0);
+
+    const order = await Order.create({
+      userId: req.user.userId,
+      email: req.user.email,
+      products: products.map(p => ({
+        productId: p.productId || p._id,
+        quantity: p.quantity
+      })),
+      amount: totalPrice,
+      status: "pending",
+      paymentMethod: "paypal",
+      isPaid: false
+    });
+
+    const paypalOrder = await createPaypalOrder(totalPrice);
+
+    return res.status(201).json({
+      orderId: order._id,
+      paypalId: paypalOrder.id,
+      approveUrl: paypalOrder.links?.find(l => l.rel === "approve")?.href
+    });
+
+  } catch (error) {
+    console.error("PAYPAL ERROR:", error); 
+    return res.status(500).json({
+      error: error.message || "PayPal create failed"
+    });
+  }
+});
+
+router.post("/paypal/capture", verifyToken, async (req, res) => {
+    try {
+        const { orderId, paypalId } = req.body;
+
+        const order = await Order.findById(orderId);
+        if (!order) return res.status(404).json({ message: "Order not found" });
+
+        const capture = await capturePaypalOrder(paypalId);
+
+        if (capture.status !== "COMPLETED") {
+            return res.status(400).json({ message: "Payment not completed" });
+        }
+
+        order.isPaid = true;
+        order.status = "processing";
+        order.paidAt = new Date();
+
+        order.paymentResult = {
+            id: capture.id,
+            email: capture.payer?.email_address,
+            status: capture.status
+        };
+
+        await order.save();
+
+        res.json(order);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "PayPal capture failed" });
     }
 });
 

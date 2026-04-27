@@ -3,7 +3,7 @@ import { Link, useNavigate} from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useLoginUserMutation } from '../redux/features/auth/authApi';
 import { setUser } from '../redux/features/auth/authSlice';
-import {toast} from 'react-toastify'
+import {toast} from 'react-toastify';
 
 
 

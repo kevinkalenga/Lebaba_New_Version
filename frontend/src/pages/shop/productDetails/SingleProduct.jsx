@@ -8,6 +8,7 @@ import { useFetchProductByIdQuery } from '../../../redux/features/products/produ
 import { addToCart } from '../../../redux/features/cart/cartSlice';
 import {useDispatch, useSelector} from "react-redux"
 import ReviewsCard from '../reviews/ReviewsCard';
+import {toast} from 'react-toastify';
 
 
 
@@ -24,7 +25,8 @@ const SingleProduct = () => {
     //  console.log(data)
 
     const handleAddToCart = (product) => {
-        dispatch(addToCart(product))
+        dispatch(addToCart(product));
+        toast.success('Your product has been added to cart successfully!')
     }
     
     if(isLoading) return <p>Loading...</p>

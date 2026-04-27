@@ -24,7 +24,24 @@ const orderSchema = new mongoose.Schema({
         type: String,
         enum: ["pending", "processing", "shipped", "completed"],
         default: "pending"
+    },
+    // paypal 
+    isPaid: {
+     type: Boolean,
+     default: false
+    },
+    paidAt: Date,
+    paymentMethod: {
+      type: String,
+      enum: ["stripe", "paypal"],
+      required: true
+    },
+    paymentResult: {
+      id: String,
+      status: String,
+      email_address: String
     }
+
 }, {
     timestamps: true
 }

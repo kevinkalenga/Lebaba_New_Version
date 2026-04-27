@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom'
 import RatingStars from '../../components/RatingStars'
 import { useDispatch } from 'react-redux';
 import { addToCart } from "../../redux/features/cart/cartSlice"
+import {toast} from 'react-toastify';
 
 const ProductCards = ({products}) => {
   
@@ -10,6 +11,7 @@ const ProductCards = ({products}) => {
 
     const handleAddToCart = (product) => {
         dispatch(addToCart(product))
+        toast.success('Your product has been added to cart successfully!')
     }
   
   

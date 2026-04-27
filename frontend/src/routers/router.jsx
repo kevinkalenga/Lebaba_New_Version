@@ -8,6 +8,7 @@ import SingleProduct from '../pages/shop/productDetails/SingleProduct';
 import Login from '../components/Login';
 import Register from '../components/Register';
 import PaymentSuccess from "../components/PaymentSuccess";
+import PayPalSuccess from "../components/PayPalSuccess";
 import DashboardLayout from "../pages/dashboard/DashboardLayout";
 import PrivateRoute from "./PrivateRoute";
 
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
             {
                 path: "/success",
                 element: <PaymentSuccess />
+            },
+            {
+                path: "/success",
+                element: <PayPalSuccess />
             }
            
         ]

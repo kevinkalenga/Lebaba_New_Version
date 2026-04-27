@@ -5,6 +5,7 @@ import CartModal from '../pages/shop/CartModal'
 import avatarImg from "../assets/avatar.png"
 import { useLogoutUserMutation } from '../redux/features/auth/authApi';
 import { logout } from '../redux/features/auth/authSlice';
+import {toast} from 'react-toastify'
 
 const Navbar = () => {
   
@@ -51,6 +52,7 @@ const Navbar = () => {
         try {
             await logoutUser().unwrap();
             dispatch(logout())
+            toast.success("You have been Logged out successful");
             navigate('/')
         } catch (error) {
             console.error("Failed to log out", error)

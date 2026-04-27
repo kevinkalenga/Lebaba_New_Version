@@ -4,6 +4,8 @@ import { clearCart } from '../../redux/features/cart/cartSlice';
 import { useNavigate } from 'react-router-dom';
 import { loadStripe } from "@stripe/stripe-js";
 import { getBaseUrl } from '../../utils/baseURL';
+import {toast} from 'react-toastify';
+import { FaCcPaypal } from "react-icons/fa6";
 
 const OrderSummary = () => {
      const dispatch = useDispatch();
@@ -20,55 +22,140 @@ const OrderSummary = () => {
     }
 
 
-    const makePayment = async (e) => {
-           e.stopPropagation();
-           if (!user) {
-             alert("Please log in to proceed to checkout");
-             navigate("/login");
-             return;
-           }
+    // const makePayment = async (e) => {
+    //        e.stopPropagation();
+    //        if (!user) {
+    //          toast.error("Please log in to proceed to checkout");
+    //          navigate("/login");
+    //          return;
+    //        }
 
-            try {
-             const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PK);
+    //         try {
+    //          const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PK);
 
-             const body = {
-               products: products,
-               userId: user._id
-             };
+    //          const body = {
+    //            products: products,
+    //            userId: user._id
+    //          };
 
-             const headers = {
-               "Content-Type": "application/json",
-               "Authorization":  `Bearer ${token}`// Ajout de token 
-             };
-             console.log("USER:", user);
-             console.log("TOKEN:", token);
-             const response = await fetch(`${getBaseUrl()}/api/orders/create-checkout-session`, {
-               method: "POST",
-               headers,
-               body: JSON.stringify(body)
-             });
+    //          const headers = {
+    //            "Content-Type": "application/json",
+    //            "Authorization":  `Bearer ${token}`// Ajout de token 
+    //          };
+    //          console.log("USER:", user);
+    //          console.log("TOKEN:", token);
+    //          const response = await fetch(`${getBaseUrl()}/api/orders/create-checkout-session`, {
+    //            method: "POST",
+    //            headers,
+    //            body: JSON.stringify(body)
+    //          });
 
             
 
-              const session = await response.json();
+    //           const session = await response.json();
 
-                if (!session.url) {
-                  console.error("No session URL:", session);
-                  return;
+    //             if (!session.url) {
+    //               console.error("No session URL:", session);
+    //               return;
+    //             }
+
+    //             window.location.href = session.url;
+
+    //           if (result.error) {
+    //             console.error("Error redirecting to Stripe:", result.error);
+    //           }
+    //         } catch (error) {
+    //           console.error("Payment error:", error);
+    //         }
+    // }
+ 
+    const makeStripePayment = async (e) => {
+          e.stopPropagation();
+
+          if (!user) {
+            toast.error("Please log in");
+            navigate("/login");
+            return;
+          }
+
+          try {
+            const response = await fetch(
+              `${getBaseUrl()}/api/orders/create-checkout-session`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  products
+                }),
+              }
+            );
+
+            const session = await response.json();
+
+            if (session.url) {
+              window.location.href = session.url;
+            }
+
+          } catch (error) {
+            console.error(error);
+            toast.error("Stripe checkout failed");
+          }
+    };
+
+
+
+     const makePaypalPayment = async (e) => {
+            e.stopPropagation();
+
+            if (!user) {
+              toast.error("Please log in");
+              navigate("/login");
+              return;
+            }
+
+            try {
+              const response = await fetch(
+                `${getBaseUrl()}/api/orders/paypal/create-order`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({ products }),
+                }
+              );
+
+              const data = await response.json();
+
+                if (data.approvalUrl) {
+                  window.location.href = data.approvalUrl;
+                } else {
+                  toast.error("No PayPal approval URL");
                 }
 
-                window.location.href = session.url;
-
-              if (result.error) {
-                console.error("Error redirecting to Stripe:", result.error);
+              if (!data.paypalId) {
+                toast.error("PayPal init failed");
+                return;
               }
+
+              // 💳 REDIRECT PAYPAL
+              window.location.href =
+                `https://www.sandbox.paypal.com/checkoutnow?token=${data.paypalId}`;
+
             } catch (error) {
-              console.error("Payment error:", error);
+              console.error(error);
+              toast.error("PayPal checkout failed");
             }
-    }
- 
-   
-     if (!user || !token) {
+      };
+     
+    
+    
+    
+      if (!user || !token) {
         return (
           <div className="bg-primary-light mt-5 rounded text-base p-6">
             <p className="text-red-500 font-semibold">
@@ -103,10 +190,16 @@ const OrderSummary = () => {
                     </button>
 
                     <button
-                        onClick={makePayment}
+                        onClick={makeStripePayment}
                         className='bg-green-600 px-3 py-1.5 text-white mt-2 rounded-md flex justify-between items-center'>
-                        <span className='mr-2'>Proceed Checkout</span>
+                        <span className='mr-2'>Proceed Checkout Stripe</span>
                         <i className="ri-bank-card-line"></i>
+                    </button>
+                    <button
+                        onClick={makePaypalPayment}
+                        className='bg-green-600 px-3 py-1.5 text-white mt-2 rounded-md flex justify-between items-center'>
+                        <span className='mr-2'>Proceed Checkout With PayPal</span>
+                        <FaCcPaypal />
                     </button>
                 </div>
             </div>
