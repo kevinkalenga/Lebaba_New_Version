@@ -2,6 +2,8 @@ const express = require('express');
 const User = require('./user.model');
 const generateToken = require('../middleware/generateToken');
 const router = express.Router();
+const sendResetEmail = require("../../utils/sendResetEmail");
+const jwt = require("jsonwebtoken");
 
 // Register endpoint
 
@@ -158,6 +160,72 @@ router.patch("/edit-profile", async (req, res) => {
         res.status(500).send({ message: "Error updating user profile" });
     }
 });
+
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || typeof email !== "string") {
+      return res.status(400).send({ message: "Invalid email" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (user) {
+      const token = jwt.sign(
+        { id: user._id },
+        process.env.JWT_SECRET_KEY,
+        { expiresIn: '15m' }
+      );
+
+      const resetLink =
+        `${process.env.CLIENT_URL}/reset-password/${token}`;
+
+      await sendResetEmail(email, resetLink);
+    }
+
+    // 🔥 TOUJOURS répondre 200
+    return res.status(200).send({
+      message: "If email exists, reset link sent"
+    });
+
+  } catch (error) {
+    console.log("FORGOT PASSWORD ERROR:", error);
+    res.status(500).send({ message: "Server error" });
+  }
+});
+
+router.post('/reset-password/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).send({ message: "Password is required" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    user.password = password; // hash via pre-save middleware
+    await user.save();
+
+    res.status(200).send({ message: "Password updated successfully" });
+
+  } catch (error) {
+    console.log("RESET PASSWORD ERROR:", error);
+    res.status(400).send({ message: "Invalid or expired token" });
+  }
+});
+
+
+
+
 
 
 

@@ -30,6 +30,8 @@ userSchema.pre('save', async function () {
 })
 
 
+
+
 // match passwords
 userSchema.methods.comparePassword = function (cadidatePassword) {
     //cadidatePassword = le mot de passe que l’utilisateur tape (celui du login)

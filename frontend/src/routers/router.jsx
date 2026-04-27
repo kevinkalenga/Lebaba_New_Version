@@ -11,6 +11,8 @@ import PaymentSuccess from "../components/PaymentSuccess";
 import PayPalSuccess from "../components/PayPalSuccess";
 import DashboardLayout from "../pages/dashboard/DashboardLayout";
 import PrivateRoute from "./PrivateRoute";
+import ForgotPassword from "../components/ForgotPassword";
+import ResetPassword from "../components/ResetPassword";
 
 const router = createBrowserRouter([
     {
@@ -30,7 +32,7 @@ const router = createBrowserRouter([
                 element: <PaymentSuccess />
             },
             {
-                path: "/success",
+                path: "/paypal-success",
                 element: <PayPalSuccess />
             }
            
@@ -43,6 +45,15 @@ const router = createBrowserRouter([
     {
         path: "/register",
         element: <Register />
+    },
+
+    {
+      path: "/forgot-password",
+      element: <ForgotPassword />
+    },
+    {
+     path: "/reset-password/:token",
+     element: <ResetPassword />
     },
 
      // dashboard routes 

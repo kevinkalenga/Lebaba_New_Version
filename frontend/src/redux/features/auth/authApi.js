@@ -36,6 +36,23 @@ const authApi = createApi({
 
         }),
 
+
+        forgotPassword: builder.mutation({
+            query: ({email}) => ({
+                url: "/forgot-password",
+                method: "POST",
+                body:  {email} 
+            })
+        }),
+
+        resetPassword: builder.mutation({
+                query: ({ token, password }) => ({
+                    url: `/reset-password/${token}`,
+                    method: "POST",
+                    body: { password }
+                })
+        }),
+
         getUser: builder.query({
             query: () => ({
                 url: "/users",
@@ -81,6 +98,8 @@ export const {
     useDeleteUserMutation,
     useUpdateUserRoleMutation,
     useEditProfileMutation,
+    useForgotPasswordMutation,
+    useResetPasswordMutation
    
 } = authApi;
 
