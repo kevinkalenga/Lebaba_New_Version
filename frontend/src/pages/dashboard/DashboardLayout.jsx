@@ -1,6 +1,7 @@
 import React from 'react'
 import { Outlet, Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import UserDashboard from './UserDashboard'
 
 
 const DashboardLayout = () => {
@@ -15,7 +16,7 @@ const DashboardLayout = () => {
             case 'admin':
                 return <div>Admin Dashboard</div>
             case 'user':
-                return <div>User Dashboard</div> 
+                return <UserDashboard />  
             default:
                 return <Navigate to="/login" replace />
 
