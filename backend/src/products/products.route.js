@@ -85,6 +85,27 @@ router.get("/", async (req, res) => {
 });
 
 
+router.get("/can-review/:productId", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const productId = req.params.productId;
+
+    const orderExists = await Order.exists({
+       userId,
+       status: { $in: ["pending", "processing", "shipped", "completed"] },
+       "products.productId": productId
+     
+    });
+
+    return res.json({ canReview: !!orderExists });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 //   get single Product
 router.get("/:id", async (req, res) => {
   try {
@@ -131,25 +152,7 @@ router.patch("/update-product/:id", verifyToken, verifyAdmin,  async (req, res) 
 });
 
 
-router.get("/can-review/:productId", verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const productId = req.params.productId;
 
-    const orderExists = await Order.exists({
-         userId,
-       status: { $in: ["processing", "shipped", "completed"] },
-       "products.productId": productId
-     
-    });
-
-    return res.json({ canReview: !!orderExists });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
 
 
 
