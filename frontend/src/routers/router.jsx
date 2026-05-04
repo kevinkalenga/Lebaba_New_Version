@@ -15,6 +15,7 @@ import ForgotPassword from "../components/ForgotPassword";
 import ResetPassword from "../components/ResetPassword";
 import UserDMain from "../pages/dashboard/user/dashboard/UserDMain";
 import UserOrders from "../pages/dashboard/user/UserOrders";
+import OrderDetails from "../pages/dashboard/user/OrderDetails";
 
 const router = createBrowserRouter([
     {
@@ -36,7 +37,11 @@ const router = createBrowserRouter([
             {
                 path: "/paypal-success",
                 element: <PayPalSuccess />
-            }
+            },
+            {
+                path: "/orders/:orderId",
+                element: <OrderDetails />
+            },
            
         ]
     },
