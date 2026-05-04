@@ -13,6 +13,7 @@ import DashboardLayout from "../pages/dashboard/DashboardLayout";
 import PrivateRoute from "./PrivateRoute";
 import ForgotPassword from "../components/ForgotPassword";
 import ResetPassword from "../components/ResetPassword";
+import UserDMain from "../pages/dashboard/user/dashboard/UserDMain";
 
 const router = createBrowserRouter([
     {
@@ -62,7 +63,7 @@ const router = createBrowserRouter([
         element: <PrivateRoute><DashboardLayout /></PrivateRoute>,
         children: [
             // User Routes 
-            {path: '', element: <div>User Dashboard</div> },
+            {path: '', element: <UserDMain /> },
             {path: 'orders', element: <div>User Order</div> },
             {path: 'payments', element: <div>User Payments</div>},
             {path: 'profile', element: <div>User Profile</div>},
