@@ -2,6 +2,7 @@ import React from 'react'
 import { Outlet, Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import UserDashboard from './UserDashboard'
+import AdminDashboard from './AdminDashboard'
 
 
 const DashboardLayout = () => {
@@ -14,7 +15,7 @@ const DashboardLayout = () => {
     const renderDashboard = () => {
         switch(user?.role) {
             case 'admin':
-                return <div>Admin Dashboard</div>
+                return <AdminDashboard />
             case 'user':
                 return <UserDashboard />  
             default:
