@@ -11,24 +11,51 @@ const UserDMain = () => {
     const {user} = useSelector((state) => state.auth);
     const {data:stats, isLoading, error} = useGetUserStatsQuery(user?.email)
      console.log(stats)
+     
     if(isLoading) return <div className='text-center text-gray-500'>Loading...</div>
     if(!stats) {
         return <div className='text-center text-gray-500'>No data available</div>
     }
     
-      const data = {
-        labels: ['Total Payments', 'Total Reviews', 'Total Purchased Products'],
-        datasets: [
-            {
-                label: 'User Stats',
-                data: [stats.totalPayments, stats.totalReviews * 100, stats.totalPurchasedProducts * 100],
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor:'rgba(75, 192, 192, 1)',
-                borderWidth: 1,
-            }
-        ]
-    }
+    
 
+    
+    const data = {
+        labels: ['Stats'],
+        datasets: [
+          {
+            label: "Payments",
+            data: [+stats?.totalPayments],
+            yAxisID: "money",
+            backgroundColor: "rgba(75, 192, 192, 0.2)",
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 1,
+          },
+          {
+            label: "Reviews",
+            data: [+stats?.totalReviews],
+            yAxisID: "count",
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+            borderColor: "rgba(255, 99, 132, 1)",
+            borderWidth: 1,
+          },
+          {
+            label: "Products",
+            data: [+stats?.totalPurchasedProducts],
+            yAxisID: "count",
+            backgroundColor: "rgba(255, 206, 86, 0.2)",
+            borderColor: "rgba(255, 206, 86, 1)",
+            borderWidth: 1,
+          }
+        ]
+    };
+    
+    
+    
+    
+    
+    
+    
     const options= {
         responsive: true,
         plugins: {
