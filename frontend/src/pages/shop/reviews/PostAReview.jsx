@@ -5,40 +5,54 @@ import { useParams } from 'react-router-dom';
 import { useFetchProductByIdQuery } from '../../../redux/features/products/productsApi';
 import { usePostReviewMutation } from '../../../redux/features/reviews/reviewsApi';
 
-const PostAReview = ({ isModalOpen, handleClose }) => {
-    const { id } = useParams();
+import {toast} from 'react-toastify';
+
+const PostAReview = ({ isModalOpen, handleClose, productId }) => {
+   
     const { user } = useSelector((state) => state.auth)
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
 
-    const { refetch } = useFetchProductByIdQuery(id, { skip: !id });
+    // const { refetch } = useFetchProductByIdQuery(id, { skip: !id });
     const [postReview] = usePostReviewMutation();
+
+   
 
     const handleRating = (value) => {
         setRating(value)
     }
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        const newComment = {
-            comment: comment,
-            rating: rating,
-            userId: user?._id,
-            productId: id
-        }
-        try {
+    e.preventDefault();
 
-            const response = await postReview(newComment).unwrap();
-            alert("Comment posted successfully!")
-            setComment('');
-            setRating(0);
-            refetch();
+    console.log("DEBUG REVIEW SUBMIT:", {
+        productId,
+        userId: user?._id,
+        comment,
+        rating
+    });
 
-        } catch (error) {
-            alert(error.message)
-        }
-        handleClose();
+    if (!productId || !user?._id || !comment || rating === 0) {
+        toast.error("All fields are required");
+        return;
     }
+
+    try {
+        await postReview({
+            comment,
+            rating,
+            productId
+        }).unwrap();
+
+        toast.success("Comment posted successfully!");
+        setComment("");
+        setRating(0);
+        handleClose();
+
+    } catch (error) {
+        toast.error(error?.data?.message || error.message);
+    }
+};
 
     return (
         <div className={`fixed inset-0 bg-black/90 flex items-center justify-center z-40 px-2 ${isModalOpen ? 'block' : 'hidden'}`}>
@@ -48,7 +62,7 @@ const PostAReview = ({ isModalOpen, handleClose }) => {
                 <div className='flex items-center mb-4'>
                     {
                         [1, 2, 3, 4, 5].map((star) => (
-                            <span
+                            <span key={star}
                                 onClick={() => handleRating(star)}
                                 className='cursor-pointer text-yellow-500 text-xl'>
                                 {

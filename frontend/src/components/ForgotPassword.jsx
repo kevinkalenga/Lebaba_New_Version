@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useForgotPasswordMutation } from "../redux/features/auth/authApi";
 import { toast } from "react-toastify";
-;
+
 
 
 export default function ForgotPassword(){
@@ -17,8 +17,8 @@ export default function ForgotPassword(){
         try {
           const res = await forgotPassword({ email }).unwrap();
 
-          // toast.success(res.message || "Reset link sent to your email");
-          toast.success("Reset link sent to your email");
+          toast.success(res.message || "Reset link sent to your email");
+         
 
           setEmail(""); 
 

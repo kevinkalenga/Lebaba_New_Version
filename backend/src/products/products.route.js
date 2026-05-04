@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const router = express.Router();
 const verifyToken = require("../middleware/verifyToken");
 const verifyAdmin = require("../middleware/verifyAdmin");
+const Order = require("../orders/orders.model")
 
 // post a product
 router.post("/create-product", async (req, res) => {
@@ -129,27 +130,28 @@ router.patch("/update-product/:id", verifyToken, verifyAdmin,  async (req, res) 
   }
 });
 
-// delete a product 
-router.delete("/:id", async (req, res) => {
+
+router.get("/can-review/:productId", verifyToken, async (req, res) => {
   try {
-    const { id } = req.params;
+    const userId = req.user.userId;
+    const productId = req.params.productId;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).send({ message: "Invalid product ID" });
-    }
+    const orderExists = await Order.exists({
+         userId,
+       status: { $in: ["processing", "shipped", "completed"] },
+       "products.productId": productId
+     
+    });
 
-    const deletedProduct = await Products.findByIdAndDelete(id);
-    if (!deletedProduct) {
-      return res.status(404).send({ message: "Product not found" });
-    }
+    return res.json({ canReview: !!orderExists });
 
-    await Reviews.deleteMany({ productId: id });
-    res.status(200).send({ message: "Product deleted successfully" });
   } catch (error) {
-    console.error("Error deleting the product", error);
-    res.status(500).send({ message: "Failed to delete the product" });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
+
+
 
 
 // get related products
@@ -188,6 +190,33 @@ router.get("/related/:id", async (req, res) => {
     res.status(500).send({ message: "Failed to fetch related products" });
   }
 });
+
+
+// delete a product 
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).send({ message: "Invalid product ID" });
+    }
+
+    const deletedProduct = await Products.findByIdAndDelete(id);
+    if (!deletedProduct) {
+      return res.status(404).send({ message: "Product not found" });
+    }
+
+    await Reviews.deleteMany({ productId: id });
+    res.status(200).send({ message: "Product deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting the product", error);
+    res.status(500).send({ message: "Failed to delete the product" });
+  }
+});
+
+
+
+
 
 
 module.exports = router;

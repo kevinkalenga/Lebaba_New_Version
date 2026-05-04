@@ -5,6 +5,15 @@ export const reviewApi = createApi({
     reducerPath: 'reviewApi',
     baseQuery: fetchBaseQuery({
         baseUrl: `${getBaseUrl()}/api/reviews`,
+        prepareHeaders: (headers, { getState }) => {
+        const token = getState().auth.token;
+
+        if (token) {
+            headers.set("authorization", `Bearer ${token}`);
+        }
+
+        return headers;
+    },
         credentials: 'include',
     }),
     tagTypes: ["Reviews"],

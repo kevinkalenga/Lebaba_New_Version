@@ -1,13 +1,16 @@
 const express = require('express');
 const Reviews = require('./reviews.model');
 const Products = require('../products/products.model');
+const verifyToken = require('../middleware/verifyToken')
 
 const router = express.Router();
 
 // post a new review
-router.post("/post-review", async (req, res) => {
+router.post("/post-review", verifyToken, async (req, res) => {
     try {
-        const { comment, rating, productId, userId } = req.body;
+        const { comment, rating, productId } = req.body;
+
+         const userId = req.user.userId;
 
         if (!comment || !rating || !productId || !userId) {
             return res.status(400).send({ message: "All fields are required" });

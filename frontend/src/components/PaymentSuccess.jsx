@@ -68,13 +68,25 @@ const PaymentSuccess = () => {
 
     const statuses = ["pending", "processing", "shipped", "completed"];
 
-    const isCompleted = (status) => {
-        return statuses.indexOf(order?.status) > statuses.indexOf(status);
+
+    const isCompleted = (stepStatus) => {
+       const currentIndex = statuses.indexOf(order?.status);
+       const stepIndex = statuses.indexOf(stepStatus);
+
+       return currentIndex > stepIndex;
     };
 
-    const isCurrent = (status) => {
-        return order?.status === status;
+    const isCurrent = (stepStatus) => {
+        return order?.status === stepStatus;
     };
+
+    // const isCompleted = (status) => {
+    //     return statuses.indexOf(order?.status) > statuses.indexOf(status);
+    // };
+
+    // const isCurrent = (status) => {
+    //     return order?.status === status;
+    // };
 
     const steps = [
         {
@@ -155,7 +167,7 @@ const PaymentSuccess = () => {
             </h2>
 
             <p className="mb-2">
-                <strong>Order ID:</strong> {order?.orderId}
+                <strong>Order ID:</strong> {order?._id}
             </p>
 
             <p className="mb-8 capitalize">

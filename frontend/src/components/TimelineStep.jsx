@@ -5,11 +5,20 @@ const TimelineStep = ({step, order, isCompleted, isCurrent, isLastStep, descript
     // timeline steps
  
 
-     const iconBgColor = isCompleted || isCurrent ? icon.bgColor : "bg-gray-100";
+    //  const iconBgColor = isCompleted || isCurrent ? icon.bgColor : "bg-gray-100";
+
+    const iconBgColor = isCurrent
+    ? icon.bgColor
+    : isCompleted
+        ? icon.bgColor
+        : "bg-gray-100";
 
      const iconTextColor = isCompleted || isCurrent ? icon.textColor : "text-gray-400";
+
+     const connectorColor =
+    isCompleted || isCurrent ? "bg-blue-500" : "bg-gray-200";
      
-     const connectorColor = isCompleted ? "bg-blue-500" : "bg-gray-200";
+    //  const connectorColor = isCompleted ? "bg-blue-500" : "bg-gray-200";
 
      const labelTextColor = isCompleted || isCurrent ? "text-gray-900" : "text-gray-500";
 
@@ -27,7 +36,7 @@ const TimelineStep = ({step, order, isCompleted, isCurrent, isLastStep, descript
         </div>
         <div className='mt-3 sm:pe-8'>
                 <h3 className= {`font-medium text-base ${labelTextColor}`}>{step.label}</h3>
-                <time className='block mb-2 text-sm font-normal leading-none text-gray-400'>{order.updatedAt ? new Date(order.updatedAt).toLocaleString() : 'Time'}</time>
+                <time className='block mb-2 text-sm font-normal leading-none text-gray-400'>{order.paidAt || order.updatedAt ? new Date(order.updatedAt).toLocaleString() : 'Time'}</time>
                 <p className={`text-base font-normal ${descriptionTextColor}`}>{description}</p>
         </div>
     </li>

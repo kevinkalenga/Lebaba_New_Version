@@ -24,7 +24,7 @@ const sendResetEmail = async (email, resetLink) => {
     // console.log("EMAIL SENT ✔");
 
   } catch (error) {
-    console.log("EMAIL ERROR ❌", error);
+    console.log("EMAIL ERROR ", error);
   }
 };
 

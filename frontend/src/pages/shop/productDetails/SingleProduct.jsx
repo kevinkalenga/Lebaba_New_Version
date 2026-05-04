@@ -19,10 +19,11 @@ const SingleProduct = () => {
     const {data, error, isLoading} = useFetchProductByIdQuery(id);
      const {isAuthenticated} = useSelector((state) => state.auth)
      console.log(isAuthenticated)
-     const singleProduct = data?.product || {};
+     const singleProduct = data?.product;
     //  console.log(singleProduct._id)
      const productReviews = data?.reviews || [];
     //  console.log(data)
+    const productId = singleProduct?._id;
 
     const handleAddToCart = (product) => {
         dispatch(addToCart(product));
@@ -91,7 +92,7 @@ const SingleProduct = () => {
             <section className='section__container mt-8'>
               
                {
-                isAuthenticated ? ( <ReviewsCard productReviews = {productReviews}/>):(
+                isAuthenticated ? ( <ReviewsCard productReviews = {productReviews}  productId={productId}/>):(
                    <div className="mt-12 border rounded-lg p-6 bg-gray-50 text-center">
                       <h3 className="text-lg font-semibold text-gray-800">
                           Want to leave a review?

@@ -6,39 +6,47 @@ import {toast} from 'react-toastify'
 
 
 const Register = () => {
-    const [message, setMessage] = useState('');
+    // const [message, setMessage] = useState('');
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState("");
     
     const navigate = useNavigate();
 
     const [registerUser, { isLoading }] = useRegisterUserMutation()
 
+     const handleRegister = async (e) => {
+            e.preventDefault();
 
+            // bloque double click
+            if (isLoading) return;
+
+            if (password !== confirmPassword) {
+                toast.error("Passwords do not match");
+                return;
+            }
+
+            const data = { username, email, password };
+
+            try {
+                const res = await registerUser(data).unwrap();
+
+                toast.success("Registration successful");
+
+                //attendre avant navigation
+                setTimeout(() => {
+                    navigate('/login');
+                }, 100);
+
+            } catch (error) {
+                toast.error("Registration failed");
+            }
+    };
    
 
 
-    const handleRegister = async (e) => {
-        e.preventDefault();
-        const data = {
-            username,
-            email,
-            password
-        }
-        // console.log(data)
-
-        try {
-            await registerUser(data).unwrap();
-            // console.log(response)
-            toast.success("Registration successful");
-            navigate('/login')
-        } catch (error) {
-            setMessage("Registration failed")
-        } 
-        
-
-    }
+   
     return (
         <section className='h-screen flex items-center justify-center'>
             <div className='max-w-sm border shadow bg-white mx-auto p-8'>
@@ -47,22 +55,32 @@ const Register = () => {
                     <input type="text" name="username" id="username"
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder='username' required
+                        value={username}
                         className='w-full bg-gray-100 focus:outline-none px-5 py-3'
                     />
                     <input type="email" name="email" id="email"
+                        value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder='Email Address' required
                         className='w-full bg-gray-100 focus:outline-none px-5 py-3'
                     />
                     <input type="password" name="password" id="password"
+                        value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder='Password' required
                         className='w-full bg-gray-100 focus:outline-none px-5 py-3'
                     />
+                    <input type="password" 
+                         value={confirmPassword}
+                         name="confirmPassword" 
+                         onChange={(e) => setConfirmPassword(e.target.value)}
+                         placeholder='Confirm Password' required
+                         className='w-full bg-gray-100 focus:outline-none px-5 py-3'
+                    />
                    
-                    {
+                    {/* {
                         message && <p className='text-red-500'>{message}</p>
-                    }
+                    } */}
 
                     <button type='submit'
                         className='w-full mt-5 bg-primary text-white hover:bg-indigo-500 font-medium py-3 rounded-md'

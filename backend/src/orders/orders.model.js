@@ -10,14 +10,26 @@ const orderSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
-    
-    
+
+
     products: [
         {
-            productId: { type: String, required: true },
+            productId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+            required: true
+            },
             quantity: { type: Number, required: true }
         }
     ],
+    
+    
+    // products: [
+    //     {
+    //         productId: { type: String, required: true },
+    //         quantity: { type: Number, required: true }
+    //     }
+    // ],
     amount: Number,
     email: { type: String, required: true },
     status: {

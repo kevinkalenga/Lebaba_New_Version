@@ -146,60 +146,52 @@ const YOUR_DOMAIN = 'http://localhost:4242';
     }
 });
 
+
 router.post("/confirm-payment", verifyToken, async (req, res) => {
-    const { session_id } = req.body;
-    const userId = req.user.userId;
-
     try {
-        const session = await stripe.checkout.sessions.retrieve(session_id, {
-            expand: ["payment_intent"]
-        });
+        const { session_id } = req.body;
 
-        // 🔐 security check
-        if (session.metadata.userId !== userId.toString()) {
-            return res.status(403).json({ error: "Unauthorized session" });
+        if (!session_id) {
+            return res.status(400).json({ error: "Missing session_id" });
         }
 
-        // 🧠 FIX: payment_intent can be string OR object
-        const paymentIntentId =
-            typeof session.payment_intent === "string"
-                ? session.payment_intent
-                : session.payment_intent?.id;
+        const session = await stripe.checkout.sessions.retrieve(session_id);
+
+        const orderId = session.metadata?.orderId;
+
+        if (!orderId) {
+            return res.status(400).json({ error: "Missing orderId in metadata" });
+        }
+
+        const order = await Order.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+
+        if (order.userId.toString() !== req.user.userId.toString()) {
+            return res.status(403).json({ error: "Unauthorized" });
+        }
+
+        if (order.isPaid) {
+            return res.json({ order });
+        }
 
         const isPaid = session.payment_status === "paid";
 
-        if (!paymentIntentId) {
-            return res.status(400).json({ error: "Missing payment intent" });
-        }
+        order.isPaid = isPaid;
+        order.status = "pending";
+        order.paidAt = isPaid ? new Date() : null;
 
-        let order = await Order.findOne({
-            orderId: paymentIntentId,
-            userId
+        const updatedOrder = await order.save();
+
+        return res.json({
+            success: true,
+            order: updatedOrder
         });
 
-        // 🆕 If order not found → create it
-        if (!order) {
-            order = new Order({
-                orderId: paymentIntentId,
-                amount: session.amount_total / 100,
-                email: session.customer_details?.email || req.user.email,
-                userId,
-                products: [],
-                status: isPaid ? "pending" : "failed",
-                paymentMethod: "stripe",
-                isPaid
-            });
-        } else {
-            order.status = isPaid ? "pending" : "failed";
-            order.isPaid = isPaid;
-        }
-
-        await order.save();
-
-        return res.json({ order });
-
     } catch (error) {
-        console.error("Confirm payment error:", error);
+        console.error(error);
         return res.status(500).json({
             error: error.message
         });
@@ -208,24 +200,20 @@ router.post("/confirm-payment", verifyToken, async (req, res) => {
 
 
 
-
-
-
-router.get('/my-orders', verifyToken, async (req, res) => {
+router.get("/my-orders", verifyToken, async (req, res) => {
     try {
-        const orders = await Order.find({ userId: req.user.userId });
+        const orders = await Order.find({
+            userId: req.user.userId
+        })
+        .sort({ createdAt: -1 });
 
-        if (!orders || orders.length === 0) {
-            return res.status(404).send({
-                message: "No orders found"
-            });
-        }
-
-        res.status(200).send({ orders });
+        return res.status(200).json({
+            orders
+        });
 
     } catch (error) {
         console.error(error);
-        res.status(500).send({
+        return res.status(500).json({
             message: "Failed to fetch orders"
         });
     }

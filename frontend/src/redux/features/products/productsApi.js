@@ -8,6 +8,15 @@ const productsApi = createApi({
     reducerPath: 'productApi',
     baseQuery: fetchBaseQuery({
         baseUrl: `${getBaseUrl()}/api/products`,
+        prepareHeaders: (headers, { getState }) => {
+          const token = getState().auth?.token;
+
+          if (token) {
+              headers.set("authorization", `Bearer ${token}`);
+          }
+
+          return headers;
+        },
         credentials: 'include'
     }),
     tagTypes: ["Products"],
@@ -66,6 +75,16 @@ const productsApi = createApi({
             }),
             invalidatesTags: (result, error, id) => [{ type: "Products", id }]
         }),
+        canUserReview: builder.query({
+            query: (productId) => ({
+                 url: `/can-review/${productId}`,
+                  method: "GET",
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                  }
+                 
+            })
+        })
 
     })
 })
@@ -76,7 +95,8 @@ export const {
     useAddProductMutation,
     useUpdateProductMutation,
     useDeleteProductMutation,
-    useFetchRelatedProductsQuery
+    useFetchRelatedProductsQuery,
+    useCanUserReviewQuery
 } = productsApi;
 
 export default productsApi;

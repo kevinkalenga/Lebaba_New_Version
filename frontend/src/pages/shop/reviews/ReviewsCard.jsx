@@ -4,14 +4,27 @@ import { formateDate } from "../../../utils/formateDate"
 import RatingStars from '../../../components/RatingStars'
 import { useState } from "react";
 import PostAReview from "./PostAReview"
+import { useSelector } from "react-redux";
+import { useCanUserReviewQuery } from '../../../redux/features/products/productsApi';
 
 
 
-const ReviewsCard = ({ productReviews }) => {
+const ReviewsCard = ({ productReviews, productId }) => {
 
     const [isModalOpen, setIsModalOpen] = useState(false)
     const reviews = productReviews || []
-    console.log(reviews)
+    // console.log(reviews)
+
+    const { user } = useSelector(state => state.auth);
+    
+     const { data, isLoading } = useCanUserReviewQuery(productId, {
+           skip: !productId || !user
+        });
+
+         console.log(data)
+         console.log("PRODUCT ID PROP:", productId);
+    
+        const canReview = data?.canReview ;
 
     const handleOpenReviewModal = () => {
         setIsModalOpen(true)
@@ -52,14 +65,18 @@ const ReviewsCard = ({ productReviews }) => {
 
             {/* add review button */}
             <div className="mt-12">
-                <button
-                    onClick={handleOpenReviewModal}
-                    className="px-6 py-3 bg-primary text-white rounded-md">
-                    Add A Review
-                </button>
+               {
+                 canReview && (
+                    <button
+                        onClick={handleOpenReviewModal}
+                        className="px-6 py-3 bg-primary text-white rounded-md">
+                        Add A Review
+                    </button>
+                 )
+               }
             </div>
             {/* review modal */}
-           <PostAReview isModalOpen={isModalOpen} handleClose={handleCloseReviewModal} />
+           <PostAReview isModalOpen={isModalOpen} handleClose={handleCloseReviewModal}   productId={productId} />
         </div>
 
 
