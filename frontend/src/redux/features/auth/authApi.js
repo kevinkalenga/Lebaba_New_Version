@@ -85,6 +85,16 @@ const authApi = createApi({
                 body: profileData
             })
         }),
+        uploadImage: builder.mutation({
+            query(body) {
+                return {
+                    url: "/me/upload_image",
+                    method: "POST",
+                    body
+                }
+            },
+            providesTags: ["User"]
+        }),
        
       })
 })
@@ -99,7 +109,8 @@ export const {
     useUpdateUserRoleMutation,
     useEditProfileMutation,
     useForgotPasswordMutation,
-    useResetPasswordMutation
+    useResetPasswordMutation,
+    useUploadImageMutation
    
 } = authApi;
 

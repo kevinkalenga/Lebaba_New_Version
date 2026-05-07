@@ -2,8 +2,15 @@ const express = require('express');
 const User = require('./user.model');
 const generateToken = require('../middleware/generateToken');
 const router = express.Router();
+const multer = require("multer");
 const sendResetEmail = require("../../utils/sendResetEmail");
 const jwt = require("jsonwebtoken");
+const {delete_file, upload_file} = require('../../utils/cloudinary.js')
+const storage = multer.memoryStorage();
+
+const upload = multer({
+    storage
+});
 
 // Register endpoint
 
@@ -39,8 +46,8 @@ router.post('/login', async(req, res) => {
         console.log(token)
         res.cookie('token', token, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'None'
+            secure: false,
+            sameSite: 'lax'
         })
         
 
@@ -83,7 +90,10 @@ router.delete("/users/:id", async (req, res) => {
             return res.status(404).send({ message: "User not found" });
         }
         
-       
+        // Supression de l img depuis cloudinary 
+        if(user?.profileImage?.public_id) {
+            await delete_file(user?.profileImage.public_id)
+        }
         
         
         res.status(200).send({ message: "User deleted successfully" });
@@ -122,6 +132,10 @@ router.put("/users/:id", async (req, res) => {
         res.status(500).send({ message: "Error updating user role" });
     }
 });
+
+
+
+
 
 
 // edit or update profile
@@ -184,7 +198,7 @@ router.post('/forgot-password', async (req, res) => {
       await sendResetEmail(email, resetLink);
     }
 
-    // 🔥 TOUJOURS répondre 200
+    //  TOUJOURS répondre 200
     return res.status(200).send({
       message: "If email exists, reset link sent"
     });
@@ -221,6 +235,26 @@ router.post('/reset-password/:token', async (req, res) => {
     console.log("RESET PASSWORD ERROR:", error);
     res.status(400).send({ message: "Invalid or expired token" });
   }
+});
+
+
+
+router.post("/me/upload_image", upload.single("image"), async (req, res) => {
+
+    const imgResponse = await upload_file(
+        req.file.buffer,
+        "lebaba/avatar"
+    );
+
+    const user = await User.findByIdAndUpdate(
+        req.body.userId,
+        {
+            profileImage: imgResponse
+        },
+        { new: true }
+    );
+
+    res.json({ user });
 });
 
 

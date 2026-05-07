@@ -27,9 +27,12 @@ const Loging = () => {
 
          try {
             const response = await loginUser(data).unwrap();
-            // console.log(response)
+             console.log(response)
             const { token, user } = response
-            dispatch(setUser({ user, token }))
+            dispatch(setUser({
+              user: response.user,
+              token: response.token
+            }));
             toast.success("Login successful");
             navigate('/')
         } catch (error) {

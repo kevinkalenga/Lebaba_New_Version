@@ -1,61 +1,43 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-
-
-
-const loadUserFromLocalStorage = () => {
+const loadUser = () => {
     try {
-        const serializedState = localStorage.getItem('user');
-        if (serializedState == null) return null;
-        return JSON.parse(serializedState);
-    } catch (error) {
+        const data = localStorage.getItem("user");
+        return data ? JSON.parse(data) : null;
+    } catch {
         return null;
     }
 };
 
-
-
-
 const initialState = {
-    user: loadUserFromLocalStorage(),
+    user: loadUser(),
     token: localStorage.getItem("token") || null,
-    isAuthenticated: !!loadUserFromLocalStorage(),
+    isAuthenticated: !!localStorage.getItem("token"),
 };
-
-
-
-
-
-
-
-
 
 const authSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
         setUser: (state, action) => {
-            state.user = action.payload.user;
-            state.token = action.payload.token;
-            state.isAuthenticated = true;
+    state.user = action.payload.user;
+    state.token = action.payload.token || state.token;
+    state.isAuthenticated = true;
 
-            localStorage.setItem(
-                'user',
-                JSON.stringify(state.user)
-            );
-            localStorage.setItem('token', action.payload.token);
-        },
+    localStorage.setItem("user", JSON.stringify(action.payload.user));
+    // localStorage.setItem("token", action.payload.token);
+},
 
-        logout: (state) => {
-            state.user = null;
-            state.token = null;
-            state.isAuthenticated = false;
+logout: (state) => {
+    state.user = null;
+    state.token = null;
+    state.isAuthenticated = false;
 
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
-        }
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+}
     }
 });
 
 export const { setUser, logout } = authSlice.actions;
-export default authSlice.reducer
+export default authSlice.reducer;
