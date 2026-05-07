@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { useGetAdminStatsQuery } from '../../../../../redux/features/stats/statsApi';
+import { useGetAdminStatsQuery } from '../../../../redux/features/stats/statsApi';
 import AdminStats from './AdminStats';
 import AdminStatsChart from './AdminStatsChart';
  
