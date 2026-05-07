@@ -8,31 +8,33 @@ const router = express.Router();
 const verifyToken = require("../middleware/verifyToken");
 const verifyAdmin = require("../middleware/verifyAdmin");
 const Order = require("../orders/orders.model")
+const uploadImage = require("../../utils/uploadImage");
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 // post a product
+
+
 router.post("/create-product", async (req, res) => {
   try {
-    // Create product instance
+
+    const imageUrl = req.body.image;
+
     const newProduct = new Products({
       ...req.body,
+      image: imageUrl
     });
 
     const savedProduct = await newProduct.save();
-    //calculate review
-    const reviews = await Reviews.find({ productId: savedProduct._id });
-    if (reviews.length > 0) {
-      const totalRating = reviews.reduce(
-        (acc, review) => acc + review.rating,
-        0
-      );
-      const averageRating = totalRating / reviews.length;
-      savedProduct.rating = averageRating;
-      await savedProduct.save();
-    }
+
     res.status(201).send(savedProduct);
+
   } catch (error) {
     console.error("Error creating new product", error);
-    res.status(500).send({ message: "Failed to create new product" });
+    res.status(500).send({
+      message: "Failed to create new product"
+    });
   }
 });
 

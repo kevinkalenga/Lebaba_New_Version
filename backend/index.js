@@ -25,12 +25,21 @@ const productRoutes = require('./src/products/products.route');
 const reviewRoutes = require('./src/reviews/reviews.route');
 const orderRoutes = require('./src/orders/orders.route');
 const statsRoutes = require('./src/stats/stats.route')
+const uploadImage = require("./utils/uploadImage");
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/stats', statsRoutes)
+
+
+
+app.post("/uploadImage", (req, res) => {
+  uploadImage(req.body.image)
+    .then((url) => res.send({ url }))
+    .catch((err) => res.status(500).send(err));
+});
 
 
 

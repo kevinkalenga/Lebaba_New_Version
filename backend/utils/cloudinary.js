@@ -3,6 +3,7 @@ import cloudinary from "cloudinary";
 import dotenv from "dotenv";
 import streamifier from "streamifier"; // important
 
+
 dotenv.config({ path: "backend/config/config.env" });
 
 cloudinary.v2.config({

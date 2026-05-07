@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {useSelector } from 'react-redux';
  import TextInput from './TextInput';
  import SelectInput from './SelectInput';
-
+ import UploadImage from './UploadImage';
 import { useAddProductMutation } from '../../../../redux/features/products/productsApi';
 import { useNavigate } from 'react-router-dom';
 
@@ -52,27 +52,71 @@ const AddProduct = () => {
 
     const navigate = useNavigate()
 
-    const handleSubmit = async(e) => {
-        e.preventDefault();
-        if(!product.name || !product.category || !product.price || !product.description || !product.color) {
-            alert('Please fill all the required fields');
-            return;
-        }
+    // const handleSubmit = async(e) => {
+    //     e.preventDefault();
+    //     if(!product.name || !product.category || !product.price || !product.description || !product.color) {
+    //         alert('Please fill all the required fields');
+    //         return;
+    //     }
 
-        try {
-            await AddProduct({...product, image, author: user?._id}).unwrap();
-            alert('Product added successfully');
-            setProduct({ name: '',
-                category: '',
-                color: '',
-                price: '',
-                description: ''})
-                setImage('');
-                navigate("/shop")
-        } catch (error) {
-            console.log("Failed to submit product", error);
-        }
+    //     try {
+    //         await AddProduct({...product, image, author: user?._id}).unwrap();
+    //         console.log("IMAGE:", image);
+    //         if (!image) {
+    //             alert("Upload image first");
+    //             return;
+    //         }
+    //         alert('Product added successfully');
+    //         setProduct({ name: '',
+    //             category: '',
+    //             color: '',
+    //             price: '',
+    //             description: ''})
+    //             setImage('');
+    //             navigate("/shop")
+    //     } catch (error) {
+    //         console.log("Failed to submit product", error);
+    //     }
+    // }
+
+      
+       const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!image) {
+        alert("Upload image first");
+        return;
     }
+
+    if (!product.name || !product.category || !product.price || !product.description || !product.color) {
+        alert('Please fill all the required fields');
+        return;
+    }
+
+    try {
+        await AddProduct({
+            ...product,
+            image,
+            author: user?._id
+        }).unwrap();
+
+        alert('Product added successfully');
+
+        setProduct({
+            name: '',
+            category: '',
+            color: '',
+            price: '',
+            description: ''
+        });
+
+        setImage('');
+        navigate("/shop");
+
+    } catch (error) {
+        console.log("Failed to submit product", error);
+    }
+};
 
     return (
         <div className="container mx-auto mt-8">
@@ -107,7 +151,13 @@ const AddProduct = () => {
                     value={product.price}
                     onChange={handleChange}
                 />
-   
+    
+                <UploadImage
+                    name="image"
+                    id="image"
+                    placeholder='Image'
+                    setImage={setImage}
+                />
                
                 <div>
                 <label htmlFor="description" className='block text-sm font-medium text-gray-700'>Description</label>
