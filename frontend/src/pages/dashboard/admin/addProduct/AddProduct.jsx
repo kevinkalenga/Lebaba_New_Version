@@ -5,6 +5,7 @@ import {useSelector } from 'react-redux';
  import UploadImage from './UploadImage';
 import { useAddProductMutation } from '../../../../redux/features/products/productsApi';
 import { useNavigate } from 'react-router-dom';
+import {toast} from 'react-toastify';
 
 const categories = [
     { label: 'Select Category', value: '' },
@@ -100,7 +101,7 @@ const AddProduct = () => {
             author: user?._id
         }).unwrap();
 
-        alert('Product added successfully');
+        toast.success('Product added successfully');
 
         setProduct({
             name: '',

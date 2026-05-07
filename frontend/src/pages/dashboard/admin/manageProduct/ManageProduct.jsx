@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useFetchAllProductsQuery, useDeleteProductMutation } from '../../../../redux/features/products/productsApi'
 import { formateDate } from '../../../../utils/formateDate';
 import { Link } from 'react-router-dom';
+import {toast} from 'react-toastify';
 
 const ManageProduct = () => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -28,7 +29,7 @@ const ManageProduct = () => {
     const handleDeleteProduct = async (id) => {
         try {
             const response = await deleteProduct(id).unwrap();
-            alert("Product deleted successfully")
+            toast.success("Product deleted successfully")
             await refetch()
 
         } catch (error) {
