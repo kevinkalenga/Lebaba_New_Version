@@ -43,10 +43,18 @@ export const reviewApi = createApi({
                { type: "Reviews", id: userId }
             ]
             // providesTags: (result) => result ? [{ type: "Reviews", id: result[0]?.email }] : []
-        })
+        }),
+        getReviewsByProductId: builder.query({
+            query: (productId) => ({
+                url: `/product/${productId}`
+            }),
+            providesTags: (result, error, productId) => [
+                { type: "Reviews", id: productId }
+            ]
+        }),
     })
 })
 
-export const { usePostReviewMutation, useGetReviewsCountQuery, useGetReviewsByUserIdQuery } = reviewApi;
+export const { usePostReviewMutation, useGetReviewsCountQuery, useGetReviewsByUserIdQuery,  useGetReviewsByProductIdQuery } = reviewApi;
 
 export default reviewApi;

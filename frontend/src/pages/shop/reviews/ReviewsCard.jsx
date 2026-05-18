@@ -6,14 +6,16 @@ import { useState } from "react";
 import PostAReview from "./PostAReview"
 import { useSelector } from "react-redux";
 import { useCanUserReviewQuery } from '../../../redux/features/products/productsApi';
+import { useGetReviewsByProductIdQuery } from '../../../redux/features/reviews/reviewsApi';
 
 
 
 const ReviewsCard = ({ productReviews, productId }) => {
 
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const reviews = productReviews || []
-    // console.log(reviews)
+    // const reviews = productReviews || []
+    const { data: reviews = [] } = useGetReviewsByProductIdQuery(productId);
+    console.log("REVIEWS API:", reviews);
 
     const { user } = useSelector(state => state.auth);
     
@@ -43,9 +45,15 @@ const ReviewsCard = ({ productReviews, productId }) => {
                         <div>
                             {
                                 reviews.map((review, index) => (
+                                    
                                     <div key={index} className='mt-4'>
                                         <div className='flex gap-4  items-center'>
-                                            <img src={commentorIcon} alt="" className='size-14' />
+                                            <img
+                                                src={review?.userId?.profileImage || commentorIcon}
+                                                alt={review?.userId?.username}
+                                                className='size-14 object-cover rounded-full'
+                                            />
+                                            {/* <img src={user?.userId?.profileImage?.secure_url || commentorIcon} alt={review?.userId?.username} className='size-14 object-cover rounded-full' /> */}
                                             <div className='space-y-1'>
                                                 <p className='text-lg font-medium underline capitalize underline-offset-4 text-blue-400'>{review?.userId?.username}</p>
                                                 <p className='text-[12px] italic'>{formateDate(review?.updatedAt)}</p>

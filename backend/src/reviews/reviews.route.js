@@ -81,7 +81,7 @@ router.get("/:userId", async (req, res) => {
     }
 
     try {
-        const reviews = await Reviews.find({ userId: userId }).sort({ createdAt: -1 });
+        const reviews = await Reviews.find({ userId: userId }) .populate("userId", "username profileImage").sort({ createdAt: -1 });
         if(reviews.length === 0) {
              return res.status(404).send({message: "No reviews found"});
         }
@@ -92,6 +92,24 @@ router.get("/:userId", async (req, res) => {
         return res.status(500).send({ message: "Failed to fetch reviews by user" });
     }
 })
+
+/**/
+// GET reviews by productId
+router.get("/product/:productId", async (req, res) => {
+  
+    try {
+        const reviews = await Reviews.find({ productId: req.params.productId })
+            .populate("userId", "username profileImage")
+            .sort({ createdAt: -1 });
+
+              console.log("productId reçu:", req.params.productId);
+              console.log("type:", typeof req.params.productId);
+
+        res.status(200).json(reviews);
+    } catch (err) {
+        res.status(500).json({ message: "error" });
+    }
+});
 
 
 
